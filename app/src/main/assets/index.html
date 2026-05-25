@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syakal Ramaliyyah</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <section id="screenSplash" class="screen active splash-screen">
+      <div class="portal"></div>
+      <div class="splash-wrap">
+        <div class="top-symbols"><span>𓂀</span><span>✦</span><span>☥</span></div>
+        <div class="brand-mark">At Tukhi</div>
+        <h1 class="splash-title arabic-title"><span>Syakal</span><br><span>Ramaliyyah</span></h1>
+        <div class="subtitle">Ali Syehan</div>
+        <button class="main-orb cosmic-orb" onclick="masukAplikasi()" aria-label="Masuk ke halaman kategori" id="splashOrb">
+          <div class="orb-glow" aria-hidden="true"></div>
+          <div class="orbit-track orbit-1" aria-hidden="true"><span class="planet planet-1"></span></div>
+          <div class="orbit-track orbit-2" aria-hidden="true"><span class="planet planet-2"></span></div>
+          <div class="orbit-track orbit-3" aria-hidden="true"><span class="planet planet-3"></span></div>
+          <div class="center-core"><span class="alif-symbol">ا</span></div>
+        </button>
+        <div class="geomancy-ribbon" aria-hidden="true">
+          <div class="geomancy-card">
+            <div class="geomancy-head">I</div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row one"><span></span></div>
+          </div>
+          <div class="geomancy-card">
+            <div class="geomancy-head">II</div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+          </div>
+          <div class="geomancy-card">
+            <div class="geomancy-head">III</div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row one"><span></span></div>
+          </div>
+          <div class="geomancy-card">
+            <div class="geomancy-head">IV</div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row one"><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+            <div class="mark-row two"><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="desert-line" aria-hidden="true">
+          <div class="pyramid p1"></div>
+          <div class="pyramid p2"></div>
+          <div class="pyramid p3"></div>
+          <div class="dune"></div>
+        </div>
+        <div class="bottom-pattern"><span>✦</span><span>𓇳</span><span>✦</span><span>𓋹</span><span>✦</span></div>
+      </div>
+    </section>
+
+    <section id="screenKategori" class="screen">
+      <div class="header-row">
+        <button class="header-icon-btn" type="button">☰</button>
+        <div></div>
+        <button class="header-icon-btn" type="button">♙</button>
+      </div>
+      <div class="top-title">
+        <div class="mini-mark">𓂀</div>
+        <h1 class="brand-title arabic-title-small">Syakal Ramaliyyah</h1>
+        <div class="brand-subtitle">Ali Syehan</div>
+      </div>
+      <div class="category-grid" id="categoryGrid"></div>
+      <div class="footer-ornament">✦ ✦ ✦</div>
+    </section>
+
+    <section id="screenRandom" class="screen">
+      <div class="header-row">
+        <button class="header-icon-btn" type="button" onclick="kembaliKeKategori()">‹</button>
+        <div class="random-page-title">Syakal Ramaliyyah</div>
+        <div style="width:44px"></div>
+      </div>
+      <div class="selected-category">
+        <div class="icon" id="randomIcon">✦</div>
+        <div class="name" id="randomName">Hajat</div>
+      </div>
+      <div class="ritual-instruction" id="ritualInstruction">
+        <span class="ritual-arabic">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</span>
+      </div>
+      <div class="random-layout single-random-layout">
+        <div class="random-orb-wrap">
+          <div class="random-orb alif-symbol" id="randomDisplay">ا</div>
+          <div class="random-progress" id="randomProgress">Mencari input urutan 1</div>
+        </div>
+      </div>
+      <div class="button-row">
+        <button id="btnMulai" class="soft-button" type="button" onclick="mulaiRandom()">▶ MULAI</button>
+        <button id="btnStop" class="danger-button" type="button" onclick="stopRandom()" disabled>■ STOP</button>
+      </div>
+      <div class="current-order-card bottom-order-card">
+        <div class="current-order-label">Urutan Saat Ini</div>
+        <div class="current-order-number" id="currentOrderNumber">1</div>
+        <div class="current-order-sub">dari 16 urutan</div>
+      </div>
+      <div class="footer-ornament">✦ ✦ ✦</div>
+    </section>
+
+    <section id="screenHasil" class="screen">
+      <div class="header-row">
+        <button class="header-icon-btn" type="button" onclick="kembaliKeKategori()">‹</button>
+        <div></div>
+        <div style="width:44px"></div>
+      </div>
+      <div class="result-category-theme">Istikharah</div>
+      <div class="result-category-name" id="resultCategoryName">Hajat</div>
+      <div class="result-title result-arabic-title">وَاللَّهُ أَعْلَمُ بِالصَّوَابِ</div>
+      <div class="result-title-meaning">Dan Allah lebih mengetahui yang benar</div>
+      <div id="hasilContainer"></div>
+      <div class="input-summary-card">
+        <div class="input-summary-title">Hasil Akhir Syakal</div>
+        <div class="input-summary-grid" id="resultInputSummary"></div>
+      </div>
+      <div class="result-actions">
+        <button class="soft-button" type="button" onclick="ulangiKategori()">↻ ULANGI</button>
+        <button class="outline-button" type="button" onclick="kembaliKeKategori()">⌂ KEMBALI KE KATEGORI</button>
+        <button class="print-button" type="button" onclick="printHasil()">⎙ CETAK</button>
+      </div>
+      <div class="footer-ornament">✦ ✦ ✦</div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
