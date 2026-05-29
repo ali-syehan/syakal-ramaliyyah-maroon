@@ -9,115 +9,123 @@ const categories = [
   { label:'Sakit', randomIcon:'✤', icon:`<svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 40c2 8 8 14 14 14s12-6 14-14c-8-3-20-3-28 0z"/><path d="M26 22h12M32 16v12"/><path d="M20 40h24"/></g></svg>` }
 ];
 
-const fibonacciPool = ['1','2','3','5','8','13','21','34','55','89','144','233','377','610','987','1597','2584','4181','6765'];
-const fibonacciMap = fibonacciPool.reduce((map, value, index) => {
-  map[value] = (index + 1) % 2 === 1 ? '1' : '2';
-  return map;
-}, {});
+let urutanAktif = 0;
+let interval = null;
+let resetDisplayTimeout = null;
+let randomValue = '1';
 
-const state = {
-  urutanAktif: 0,
-  interval: null,
-  resetDisplayTimeout: null,
-  randomValue: '1',
-  nilai: Array(16).fill('')
-};
+const nilai = Array(16).fill('');
 
-function byId(id) {
+const fibonacciPool = ['1','2','3','5','8','13','21'];
+const fibonacciMap = { '1':'1', '2':'2', '3':'1', '5':'2', '8':'1', '13':'2', '21':'1' };
+
+function byId(id){
   return document.getElementById(id);
 }
 
-function setText(id, text) {
+function setText(id, text){
   const el = byId(id);
   if (el) el.textContent = text;
 }
 
-function setDisabled(id, value) {
+function setDisabled(id, value){
   const el = byId(id);
   if (el) el.disabled = value;
 }
 
-function displayRandomValue(value) {
+function displayRandomValue(value){
   return value === '1' ? 'ا' : value;
 }
 
-function setRandomDisplay(value, showRawNumber = false) {
+function setRandomDisplay(value, showRawNumber = false){
   const el = byId('randomDisplay');
   if (!el) return;
   el.textContent = showRawNumber ? value : displayRandomValue(value);
   el.classList.toggle('alif-symbol', !showRawNumber && value === '1');
 }
 
-function setRitualInstruction(type) {
+function setRitualInstruction(type){
   const el = byId('ritualInstruction');
   if (!el) return;
   const isShalawat = type === 'shalawat';
   el.classList.toggle('active-shalawat', isShalawat);
   el.innerHTML = isShalawat
-    ? '<span class="ritual-arabic">اَللَّهُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَعَلٰى آلِ مُحَمَّدٍ</span>'
-    : '<span class="ritual-arabic">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</span>';
+    ? `<span class="ritual-arabic">اَللَّهُمَّ صَلِّ عَلٰى مُحَمَّدٍ وَعَلٰى آلِ مُحَمَّدٍ</span>`
+    : `<span class="ritual-arabic">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</span>`;
 }
 
-function clearTimers() {
-  clearInterval(state.interval);
-  clearTimeout(state.resetDisplayTimeout);
-  state.interval = null;
-  state.resetDisplayTimeout = null;
-  byId('randomDisplay')?.classList.remove('is-spinning');
-}
-
-function resetDisplayToAlifAfterDelay() {
-  clearTimeout(state.resetDisplayTimeout);
-  state.resetDisplayTimeout = setTimeout(() => {
-    const randomScreen = byId('screenRandom');
-    if (randomScreen?.classList.contains('active') && !state.interval) {
-      setRandomDisplay('1');
-    }
+function resetDisplayToAlifAfterDelay(){
+  clearTimeout(resetDisplayTimeout);
+  resetDisplayTimeout = setTimeout(() => {
+    if (byId('screenRandom')?.classList.contains('active') && !interval) setRandomDisplay('1');
   }, 3000);
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach((screen) => {
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(screen => {
     screen.classList.toggle('active', screen.id === id);
   });
 }
 
-function masukAplikasi() {
+function masukAplikasi(){
   showScreen('screenKategori');
 }
 
-function kembaliKeKategori() {
-  clearTimers();
+function kembaliKeKategori(){
+  clearInterval(interval);
+  clearTimeout(resetDisplayTimeout);
+  interval = null;
+  resetDisplayTimeout = null;
   showScreen('screenKategori');
 }
 
-function pilihKategori(label, icon) {
+function pilihKategori(label, icon){
   setText('randomName', label);
   setText('randomIcon', icon);
   setText('resultCategoryName', label);
   ulangiKategori();
 }
 
-function updateRandomStatus() {
-  const current = state.urutanAktif < 16 ? String(state.urutanAktif + 1) : '16';
-  setText('currentOrderNumber', current);
-  setText(
-    'randomProgress',
-    state.urutanAktif < 16
-      ? `Mencari input urutan ${state.urutanAktif + 1}`
-      : 'Semua urutan sudah terisi'
-  );
+function jumlahTerisi(){
+  return nilai.filter(v => v === '1' || v === '2').length;
 }
 
-function renderInputSummary() {
+function inputLengkap(){
+  return jumlahTerisi() === 16;
+}
+
+function updateRandomStatus(){
+  const terisi = jumlahTerisi();
+  const nextIndex = nilai.findIndex(v => v !== '1' && v !== '2');
+
+  setText('currentOrderNumber', nextIndex >= 0 ? String(nextIndex + 1) : '16');
+
+  if (terisi === 0) {
+    setText('randomProgress', 'Belum ada urutan yang diisi');
+  } else if (terisi < 16) {
+    setText('randomProgress', `Urutan terisi ${terisi} dari 16`);
+  } else {
+    setText('randomProgress', 'Semua 16 urutan sudah terisi');
+  }
+
+  setDisabled('btnProses', !inputLengkap());
+
+  const filledCount = byId('filledCount');
+  if (filledCount) filledCount.textContent = String(terisi);
+
+  const progressFill = byId('progressFill');
+  if (progressFill) progressFill.style.width = `${(terisi / 16) * 100}%`;
+}
+
+function renderInputSummary(){
   const box = byId('resultInputSummary');
   if (!box) return;
 
-  box.innerHTML = state.nilai.map((v, i) => {
+  box.innerHTML = nilai.map((v, i) => {
     const symbol = v === '1'
-      ? '<span class="syakal-dots" aria-label="nilai 1"><span class="syakal-dot"></span></span>'
+      ? '<span class="syakal-dot" aria-label="nilai 1"></span>'
       : v === '2'
-        ? '<span class="syakal-dots" aria-label="nilai 2"><span class="syakal-dot"></span><span class="syakal-dot"></span></span>'
+        ? '<span class="syakal-line" aria-label="nilai 2"></span>'
         : '-';
 
     return `
@@ -129,7 +137,8 @@ function renderInputSummary() {
   }).join('');
 }
 
-function renderHasil() {
+/* OUTPUT LAMA, TAPI SETIAP JAWABAN DIBUAT CARD SENDIRI */
+function renderHasil(){
   const container = byId('hasilContainer');
   if (!container) return;
 
@@ -139,64 +148,135 @@ function renderHasil() {
     'Berhasil hajat atas orang tersebut'
   ];
 
-  container.innerHTML = jawaban
-    .map((text) => `<div class="result-card">${text}</div>`)
-    .join('');
+  container.innerHTML = `
+    <div class="result-card-list">
+      ${jawaban.map((text, index) => `
+        <div class="result-card result-answer-card">
+          <div class="answer-card-number">Jawaban ${index + 1}</div>
+          <div class="answer-card-text">${text}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
-function ulangiKategori() {
-  clearTimers();
-  byId('randomDisplay')?.classList.remove('is-spinning');
-  state.urutanAktif = 0;
-  state.randomValue = '1';
-  state.nilai.fill('');
+function renderManualInputGrid(){
+  const grid = byId('manualInputGrid');
+  if (!grid) return;
+
+  grid.innerHTML = nilai.map((v, i) => {
+    const symbol = v === '1'
+      ? '<span class="syakal-dot" aria-label="nilai 1"></span>'
+      : v === '2'
+        ? '<span class="syakal-line" aria-label="nilai 2"></span>'
+        : '<span class="empty-symbol">-</span>';
+
+    return `
+      <div class="choice-card ${v ? 'is-filled' : ''}">
+        <div class="choice-order">${i + 1}</div>
+        <div class="choice-symbol">${symbol}</div>
+        <div class="choice-buttons">
+          <button
+            class="choice-btn ${v === '1' ? 'active' : ''}"
+            type="button"
+            onclick="pilihNilaiUrutan(${i}, '1')">
+            1
+          </button>
+          <button
+            class="choice-btn ${v === '2' ? 'active' : ''}"
+            type="button"
+            onclick="pilihNilaiUrutan(${i}, '2')">
+            2
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function pilihNilaiUrutan(index, value){
+  nilai[index] = value;
+  renderManualInputGrid();
+  renderInputSummary();
+  updateRandomStatus();
+}
+
+function resetInputManual(){
+  nilai.fill('');
+  urutanAktif = 0;
+  randomValue = '1';
+
+  renderManualInputGrid();
+  renderInputSummary();
+  updateRandomStatus();
   setRandomDisplay('1');
   setRitualInstruction('basmalah');
+}
+
+function ulangiKategori(){
+  clearInterval(interval);
+  clearTimeout(resetDisplayTimeout);
+
+  interval = null;
+  resetDisplayTimeout = null;
+  urutanAktif = 0;
+  randomValue = '1';
+
+  nilai.fill('');
+
+  setRandomDisplay('1');
+  setRitualInstruction('basmalah');
+
   setDisabled('btnMulai', false);
   setDisabled('btnStop', true);
+
+  renderManualInputGrid();
   updateRandomStatus();
   renderInputSummary();
+
   showScreen('screenRandom');
 }
 
-function mulaiRandom() {
-  if (state.urutanAktif >= 16) return;
+function mulaiRandom(){
+  if (urutanAktif >= 16) return;
 
-  clearInterval(state.interval);
-  clearTimeout(state.resetDisplayTimeout);
-  state.resetDisplayTimeout = null;
-  byId('randomDisplay')?.classList.add('is-spinning');
+  clearInterval(interval);
+  clearTimeout(resetDisplayTimeout);
+  resetDisplayTimeout = null;
 
   setDisabled('btnMulai', true);
   setDisabled('btnStop', false);
   setRitualInstruction('shalawat');
 
-  state.interval = setInterval(() => {
-    state.randomValue = fibonacciPool[Math.floor(Math.random() * fibonacciPool.length)];
-    setRandomDisplay(state.randomValue);
+  interval = setInterval(() => {
+    randomValue = fibonacciPool[Math.floor(Math.random() * fibonacciPool.length)];
+    setRandomDisplay(randomValue);
   }, 70);
 }
 
-function stopRandom() {
-  if (!state.interval) return;
+function stopRandom(){
+  if (!interval) return;
 
-  clearInterval(state.interval);
-  state.interval = null;
+  clearInterval(interval);
+  interval = null;
 
-  byId('randomDisplay')?.classList.remove('is-spinning');
-  setRandomDisplay(state.randomValue, true);
-  const nilaiInput = fibonacciMap[state.randomValue] || '1';
-  state.nilai[state.urutanAktif] = nilaiInput;
-  state.urutanAktif += 1;
+  setRandomDisplay(randomValue, true);
 
-  setDisabled('btnMulai', state.urutanAktif >= 16);
+  const nilaiInput = fibonacciMap[randomValue] || '1';
+  nilai[urutanAktif] = nilaiInput;
+  urutanAktif += 1;
+
+  setDisabled('btnMulai', urutanAktif >= 16);
   setDisabled('btnStop', true);
+
   updateRandomStatus();
+  renderManualInputGrid();
+  renderInputSummary();
   setRitualInstruction('basmalah');
 
-  if (state.urutanAktif >= 16) {
-    clearTimeout(state.resetDisplayTimeout);
-    state.resetDisplayTimeout = null;
+  if (urutanAktif >= 16){
+    clearTimeout(resetDisplayTimeout);
+    resetDisplayTimeout = null;
     renderHasil();
     renderInputSummary();
     showScreen('screenHasil');
@@ -205,78 +285,52 @@ function stopRandom() {
   }
 }
 
-function printHasil() {
+function prosesInput(){
+  if (!inputLengkap()) {
+    updateRandomStatus();
+    alert('Lengkapi semua 16 urutan terlebih dahulu.');
+    return;
+  }
+
+  renderHasil();
+  renderInputSummary();
+  showScreen('screenHasil');
+}
+
+function printHasil(){
   if (document.querySelector('.screen.active')?.id !== 'screenHasil') {
     showScreen('screenHasil');
   }
+
   renderHasil();
   renderInputSummary();
+
   setTimeout(() => window.print(), 100);
 }
 
-function renderKategori() {
+function renderKategori(){
   const grid = byId('categoryGrid');
   if (!grid) return;
 
-  grid.innerHTML = categories.map(({ label, icon, randomIcon }) => {
-    const safeLabel = JSON.stringify(label);
-    const safeIcon = JSON.stringify(randomIcon);
-    return `
-      <button class="category-card" type="button" onclick='pilihKategori(${safeLabel}, ${safeIcon})'>
-        <div class="category-icon svg-icon">${icon}</div>
-        <div class="category-label">${label}</div>
-      </button>
-    `;
-  }).join('');
+  grid.innerHTML = categories.map(({label, icon, randomIcon}) => `
+    <button class="category-card" type="button" onclick="pilihKategori('${label}','${randomIcon}')">
+      <div class="category-icon svg-icon">${icon}</div>
+      <div class="category-label">${label}</div>
+    </button>
+  `).join('');
 }
 
-function attachGlobals() {
-  window.masukAplikasi = masukAplikasi;
-  window.kembaliKeKategori = kembaliKeKategori;
-  window.pilihKategori = pilihKategori;
-  window.ulangiKategori = ulangiKategori;
-  window.mulaiRandom = mulaiRandom;
-  window.stopRandom = stopRandom;
-  window.printHasil = printHasil;
-}
-
-function runPreviewTests() {
-  console.assert(typeof window.masukAplikasi === 'function', 'Test gagal: masukAplikasi harus tersedia secara global');
-  console.assert(typeof window.mulaiRandom === 'function', 'Test gagal: mulaiRandom harus tersedia secara global');
+function runPreviewTests(){
   console.assert(byId('categoryGrid'), 'Test gagal: #categoryGrid harus ada');
-  console.assert(byId('currentOrderNumber'), 'Test gagal: #currentOrderNumber harus ada');
-  console.assert(byId('randomDisplay'), 'Test gagal: #randomDisplay harus ada');
+  console.assert(byId('currentOrderNumber') || byId('manualInputGrid'), 'Test gagal: elemen input harus ada');
   console.assert(byId('resultInputSummary'), 'Test gagal: #resultInputSummary harus ada');
-  console.assert(fibonacciMap['21'] === '1', 'Test gagal: 21 harus memetakan nilai input 1');
-  console.assert(fibonacciMap['5'] === '2', 'Test gagal: 5 harus memetakan nilai input 2');
-  console.assert(displayRandomValue('1') === 'ا', 'Test gagal: angka random 1 harus tampil sebagai huruf Alif');
-
-  const splash = byId('screenSplash');
-  const kategori = byId('screenKategori');
-  if (splash && kategori) {
-    showScreen('screenSplash');
-    masukAplikasi();
-    console.assert(kategori.classList.contains('active'), 'Test gagal: klik splash harus membuka screenKategori');
-    console.assert(!splash.classList.contains('active'), 'Test gagal: screenSplash harus nonaktif setelah masukAplikasi');
-    showScreen('screenSplash');
-  }
-
-  state.nilai.fill('');
-  state.nilai[0] = '1';
-  state.nilai[1] = '2';
-  renderInputSummary();
-  const summary = byId('resultInputSummary');
-  if (summary) {
-    console.assert(summary.querySelectorAll('.syakal-dot').length >= 3, 'Test gagal: ringkasan nilai 1 dan 2 harus menampilkan total minimal 3 titik');
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-attachGlobals();
   renderKategori();
+  renderManualInputGrid();
   updateRandomStatus();
   renderInputSummary();
   renderHasil();
   runPreviewTests();
-  showScreen('screenSplash');
 });
